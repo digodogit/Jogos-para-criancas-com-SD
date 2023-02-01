@@ -1,0 +1,6 @@
+- Não é necessario mudar nada após descompactar.
+- Para o jogo funcionar, clique 2 vezes no "jogo.exe".
+- Cada jogo que for aberto, será aberto em nova janela.
+
+
+-Caso encontre algum erro, bug ou queira dar sugestão, entre contato pelo e-mail rodrigo.quaglio@hotmail.com

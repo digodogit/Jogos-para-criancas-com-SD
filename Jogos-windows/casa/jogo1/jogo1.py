@@ -3,6 +3,8 @@ from pygame.locals import*
 from sys import exit
 import random
 import os
+import sys
+
 def Jogar(ids,exp):
     pygame.init()
     #configuraÃ§Ãµes da tela
@@ -11,12 +13,29 @@ def Jogar(ids,exp):
     tela = pygame.display.set_mode((largura,altura))
     fonte = pygame.font.SysFont('arial', 20, True, False)
     fonte1 = pygame.font.SysFont('arial', 20, True, False)
-    limpou=fonte.render('VOCÊ GANHOU UMA ESTRELA!!', True, (255,0,255))
+    pygame.display.set_caption("prototipo: jogo de escovar os dentes")
+    
+    joysticks = []
+    for i in range(pygame.joystick.get_count()):
+        joysticks.append(pygame.joystick.Joystick(i))
+    for joystick in joysticks:
+        print(joystick.get_name()) 
+        joystick.init()
 
+    class joysticksFalso(object):
+        def __init__(self):
+            pass
+        def get_button(self,numero):
+            pass
+    if len(joysticks)==0:
+        joystick = joysticksFalso()
     #clock do jogo
     clock = pygame.time.Clock()
-    
-    path = sys._MEIPASS
+    if getattr(sys, 'frozen', False):
+        path = sys._MEIPASS
+    else:
+        path = os.path.dirname(os.path.abspath(__file__))
+
     eu = pygame.transform.flip(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\feliz.png")), (272,195)),True,False)
     euoi = pygame.transform.flip(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\Personagem2acenando.png")), (272,195)),True,False)
     eufalando = pygame.transform.flip(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\Personagem2-falando.png")), (272,195)),True,False)
@@ -44,6 +63,7 @@ def Jogar(ids,exp):
     pygame.mixer.Sound.set_volume(somBotao,0.05)
     somStar=pygame.mixer.Sound(f"{path}\\sons\\star2.ogg")
     pygame.mixer.Sound.set_volume(somStar,0.07)
+
     class personagem(object):
     
         def __init__(self):
@@ -52,9 +72,9 @@ def Jogar(ids,exp):
         def criar_personagem(self):
             self.numero = ["2","3","4","5","6","7"]
             escolhido = random.choice(self.numero)
-            self.imagem.append(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\personagens\\{escolhido}\\feliz.png")), (310,310)))
+            self.imagem.append(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\personagens\\{escolhido}\\felizolhando.png")), (310,310)))
             self.imagem.append(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\personagens\\{escolhido}\\acenando.png")), (310,310)))
-            self.imagem.append(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\personagens\\{escolhido}\\triste.png")), (310,310)))
+            self.imagem.append(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\personagens\\{escolhido}\\bocaaberta.png")), (310,310)))
 
         def desenhar(self, tela, gesto):
             if gesto == "feliz":
@@ -63,7 +83,6 @@ def Jogar(ids,exp):
                 tela.blit(self.imagem[1], (400,400))
             if gesto == "triste":
                 tela.blit(self.imagem[2], (600,400))
-
 
     class copo(pygame.sprite.Sprite):
 
@@ -85,6 +104,7 @@ def Jogar(ids,exp):
             elif self.atual== 2:
                 self.image = self.sprites[0]
                 self.rect.topleft = 430, 515
+
     class estrela(pygame.sprite.Sprite):
 
         def __init__(self):
@@ -100,13 +120,13 @@ def Jogar(ids,exp):
             self.atual = 0
             self.image = self.sprites[self.atual]
             self.rect = self.image.get_rect()
-            self.rect.topleft = 85, 50
+            self.rect.topleft = 255, 80
 
         def update(self):
             self.atual += 1
             self.image = self.sprites[self.atual]
-    class escova(pygame.sprite.Sprite):
 
+    class escova(pygame.sprite.Sprite):
         def __init__(self):
             super().__init__()
             self.sprites=[]
@@ -137,6 +157,7 @@ def Jogar(ids,exp):
                 self.rect.topleft = 430, 480
             else:
                 pass
+
         def updatevolta(self):
             self.atual -=1
             self.image = self.sprites[2]
@@ -147,14 +168,15 @@ def Jogar(ids,exp):
         def tras(self):
             self.rect[0]-=20
             pygame.display.update()
-    class pasta(pygame.sprite.Sprite):
 
+    class pasta(pygame.sprite.Sprite):
         def __init__(self):
             super().__init__()
             self.sprites=[]
             self.sprites.append(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\pasta.png")), (110,85)))
             self.sprites.append(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\pastaab.png")), (110,85)))
             self.sprites.append(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\pastaab2.png")), (110,85)))
+            self.sprites.append(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\pastaab23.png")), (110,85)))
             #self.sprites.append(pygame.image.load_extended(f"{path}\\imagens\\escova2.png"))
             self.atual = 0
             self.image = self.sprites[self.atual]
@@ -167,7 +189,7 @@ def Jogar(ids,exp):
                 self.image = self.sprites[self.atual]
                 self.rect.topleft = 190, 450
             elif self.atual == 2:
-                self.image = self.sprites[self.atual]
+                self.image = self.sprites[self.atual+1]
                 self.rect.topleft = 190, 450
             elif self.atual == 3:
                 self.image = self.sprites[0]
@@ -177,116 +199,68 @@ def Jogar(ids,exp):
             else:
                 pass
 
-    fechar = True
-    telaboca = False
-
-    #instancias
-    todas_as_escovas = pygame.sprite.Group()
-    escovas = escova()
-    todas_as_escovas.add(escovas)
-    todas_as_pastas = pygame.sprite.Group()
-    pastas = pasta()
-    todas_as_pastas.add(pastas)
-    todas_as_estrelas = pygame.sprite.Group()
-    estrelas = estrela()
-    todas_as_estrelas.add(estrelas)
-    todas_os_copos = pygame.sprite.Group()
-    copos = copo()
-    todas_os_copos.add(copos)
-    personagem = personagem()
-    personagem.criar_personagem()
-    nada = (pygame.image.load_extended(f"{path}\\imagens\\nada.png"))
-    tudo = []
-    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeiraesc.png"),"esquerda cima"))
-    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeiraesc.png"),"esquerda baixo"))
-    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeira.png"), "meio cima"))
-    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeira.png"), "meio baixo"))
-    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeiradir.png"),"direita cima"))
-    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeiradir.png"), "direita baixo"))
-
-    count = 0
-    fonte = pygame.font.SysFont('arial', 40, True, False)
-    contador=fonte.render(f'ACERTOS: {count}', True, (255,0,255))
-    sim = False
-    stack = 0
-    posx = 100
-    posy = 100
-    distancia = 75
-    margem = int((800-(2*(100+distancia)))/2)
-    vari=0
-
     def fraseselogio(count):
         frases = []
-        frases.append((fonte1.render('Isso, Parabéns! vamos para o próximo! '  , True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\elogios\\parabens.mp3")))
-        frases.append((fonte1.render('Muito bem! Os seus dentes estão ficando limpos! '  , True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\elogios\\muitobem.mp3")))  
-        frases.append((fonte1.render('Você é incrível, continue limpando! '  , True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\elogios\\continue.mp3")))
-        fim = fonte1.render('Demais! Você limpou tudo e coletou as estrelas, parabéns! '  , True, (0,0,0))
-        fim2 = fonte1.render('Agora vamos pôr a escova de volta! '  , True, (0,0,0))
-       
+        frases.append((fonte1.render('Isso, Parabéns! vamos para o próximo! '  , True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\elogios\\parabens.ogg")))
+        frases.append((fonte1.render('Muito bem! Os seus dentes estão ficando limpos! '  , True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\elogios\\muitobem.ogg")))  
+        frases.append((fonte1.render('Você é incrível, continue limpando! '  , True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\elogios\\continue.ogg")))
         oo = True
         rando = random.choice(frases)
-        pygame.mixer.Sound.set_volume(rando[1],0.2)
+        pygame.mixer.Sound.set_volume(rando[1],0.4)
         pygame.mixer.Sound.play(rando[1])
         while oo:
             pygame.display.update()
-            if pygame.event.peek(KEYDOWN)==True:
-                if (pygame.key.get_pressed()[K_SPACE]==True) and pygame.mixer.get_busy()== False:
+            if pygame.event.peek(KEYDOWN)==True or pygame.event.peek(JOYBUTTONDOWN)==True:
+                if (pygame.key.get_pressed()[K_SPACE]==True or joystick.get_button(0)) and pygame.mixer.get_busy()== False:
                     pygame.mixer.Sound.play(somBotao)
                     pygame.event.clear()
                     oo = False
+
+            tela.blit(eufeliz,(680,480))
+            tela.blit(coisinho,(0,675))
+            tela.blit(rando[0],(15,695))
+                
             if pygame.mixer.get_busy()== False:
                 tela.blit(proximo,(920,760))
-            if count == 6:
-                tela.blit(eufeliz,(680,480))
-                tela.blit(coisinho,(0,675))
-                tela.blit(fim,(15,695))
-            if count==7:
-                tela.blit(eufeliz,(680,480))
-                tela.blit(coisinho,(0,675))
-                tela.blit(fim,(15,695))
-            else:
-                tela.blit(eufeliz,(680,480))
-                tela.blit(coisinho,(0,675))
-                tela.blit(rando[0],(15,695))
 
     def fraseserro():
         frases = []
-        frases.append((fonte1.render('ops, tente de novo!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Ops.mp3")))
-        frases.append((fonte1.render('quase!! tente novamente!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Quase.mp3")))
-        frases.append((fonte1.render('Não são iguais, tente de novo!!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Nãoiguais.mp3")))
-        frases.append((fonte1.render('Diferentes... Mas sem problemas, vc consegue!!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Diferentes.mp3")))
+        frases.append((fonte1.render('ops, tente de novo!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Ops.ogg")))
+        frases.append((fonte1.render('quase!! tente novamente!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Quase.ogg")))
+        frases.append((fonte1.render('Não são iguais, tente de novo!!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Nãoiguais.ogg")))
+        frases.append((fonte1.render('Diferentes... Mas sem problemas, vc consegue!!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Diferentes.ogg")))
         oo = True
         rando = random.choice(frases)
-        pygame.mixer.Sound.set_volume(rando[1],0.2)
+        pygame.mixer.Sound.set_volume(rando[1],0.4)
         pygame.mixer.Sound.play(rando[1])
         while oo:
             if pygame.mixer.get_busy()== False:
                 tela.blit(proximo,(920,760))
             pygame.display.update()
-            if pygame.event.peek(KEYDOWN)==True:
-                if (pygame.key.get_pressed()[K_SPACE]==True) and pygame.mixer.get_busy()== False:
+            if pygame.event.peek(KEYDOWN)==True or pygame.event.peek(JOYBUTTONDOWN)==True:
+                if (pygame.key.get_pressed()[K_SPACE]==True or joystick.get_button(0)) and pygame.mixer.get_busy()== False:
                     pygame.mixer.Sound.play(somBotao)
                     pygame.event.clear()
                     oo = False
             tela.blit(eutriste,(680,480))
             tela.blit(coisinho,(0,675))
             tela.blit(rando[0],(15,695))
+
     def somtutoboca(i):
         somtutorial = []
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\boca\\2.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\boca\\3.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\boca\\4.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\boca\\5.mp3"))
-        pygame.mixer.Sound.set_volume(somtutorial[i],0.2)
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\boca\\2.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\boca\\3.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\boca\\4.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\boca\\5.ogg"))
+        pygame.mixer.Sound.set_volume(somtutorial[i],0.4)
         pygame.mixer.Sound.play(somtutorial[i])
 
     def frasetutorial(i):
         frases = [] 
         frases.append(fonte1.render('Nossa, está tudo sujo, vamos limpar?! '  , True, (0,0,0)))
-        frases.append(fonte1.render('Ótimo! Para remover todas precisamos escolher a sujeira correta e mover a escova'  , True, (0,0,0)))
-        frases.append(fonte1.render('utilize as setas do teclado para mover a escova e espaço para selecionar a sujeira'  , True, (0,0,0)))
-        frases.append(fonte1.render('Cada vez que você limpar ganhará uma estrela! Não tenha medo em errar!'  , True, (0,0,0)))
-        
+        frases.append(fonte1.render('Ótimo! Para remover todas, precisamos escolher a sujeira correta e mover a escova.'  , True, (0,0,0)))
+        frases.append(fonte1.render('utilize as "setas" do teclado para mover a escova e o "espaço" para selecionar a sujeira'  , True, (0,0,0)))
+        frases.append(fonte1.render('Cada vez que você limpar, ganhará uma estrela! Não tenha medo em errar!'  , True, (0,0,0)))
         
         somtutoboca(i)
         while i< len(frases):
@@ -304,8 +278,10 @@ def Jogar(ids,exp):
             if pygame.mixer.get_busy()== False:
                 tela.blit(proximo,(920,760))
             pygame.display.flip()
-            if pygame.event.peek(KEYDOWN)==True:
-                    if (pygame.key.get_pressed()[K_SPACE]==True):
+            if pygame.event.peek(QUIT)==True:
+                return exp
+            if pygame.event.peek(KEYDOWN)==True or pygame.event.peek(JOYBUTTONDOWN)==True:
+                    if (pygame.key.get_pressed()[K_SPACE]==True or joystick.get_button(0)):
                         if pygame.mixer.get_busy()== False:
                             pygame.mixer.Sound.play(somBotao)
                             i+=1
@@ -322,22 +298,25 @@ def Jogar(ids,exp):
         frases.append(fonte1.render('Demais! Você limpou tudo e coletou as estrelas, parabéns! '  , True, (0,0,0)))
         frases.append(fonte1.render('Agora vamos pôr a escova de volta! '  , True, (0,0,0)))
         som = []
-        som.append(pygame.mixer.Sound(f"{path}\\sons\\elogios\\demais.mp3"))
-        som.append(pygame.mixer.Sound(f"{path}\\sons\\elogios\\volta.mp3"))
+        som.append(pygame.mixer.Sound(f"{path}\\sons\\elogios\\demais.ogg"))
+        som.append(pygame.mixer.Sound(f"{path}\\sons\\elogios\\volta.ogg"))
         i=0
-        pygame.mixer.Sound.set_volume(som[i],0.2)
+        pygame.mixer.Sound.set_volume(som[i],0.4)
         pygame.mixer.Sound.play(som[i])
         oo = True
         while oo:
+            tela.blit(eufeliz,(680,480))
+            tela.blit(coisinho,(0,675))
+            tela.blit(frases[i],(15,695))
             if pygame.mixer.get_busy()== False:
                 tela.blit(proximo,(920,760))
             pygame.display.update()
-            if pygame.event.peek(KEYDOWN)==True:
-                if (pygame.key.get_pressed()[K_SPACE]==True) and pygame.mixer.get_busy()== False:
+            if pygame.event.peek(KEYDOWN)==True or pygame.event.peek(JOYBUTTONDOWN)==True:
+                if (pygame.key.get_pressed()[K_SPACE]==True or joystick.get_button(0)) and pygame.mixer.get_busy()== False:
                     pygame.mixer.Sound.play(somBotao)
                     pygame.event.clear()
                     i=i+1
-                    if i < 1:
+                    if i == 1:
                         pygame.mixer.Sound.play(som[i])
                     if i == 2:
                         oo = False
@@ -345,29 +324,29 @@ def Jogar(ids,exp):
 
     def somtutorial(contador):
         somtutorial = []
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\1.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\2.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\3.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\4.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\5.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\6.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\7.mp3"))
-        pygame.mixer.Sound.set_volume(somtutorial[contador],0.2)
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\1.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\2.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\3.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\4.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\5.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\6.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\7.ogg"))
+        pygame.mixer.Sound.set_volume(somtutorial[contador],0.4)
         pygame.mixer.Sound.play(somtutorial[contador])
 
     def somtutorial1(contador):
         somtutorial = []
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\8.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\9.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\10.mp3"))
-        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\11.mp3"))
-        pygame.mixer.Sound.set_volume(somtutorial[contador],0.2)
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\8.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\9.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\10.ogg"))
+        somtutorial.append(pygame.mixer.Sound(f"{path}\\sons\\tutorial\\11.ogg"))
+        pygame.mixer.Sound.set_volume(somtutorial[contador],0.4)
         pygame.mixer.Sound.play(somtutorial[contador])
 
     def iniciotutorial(contador):
         frases = []
-        frases.append(fonte1.render('oi! Aqui iremos aprender a escovar os dentes! ', True, (0,0,0)))
-        frases.append(fonte1.render('primeiro, vamos nos preparar! ', True, (0,0,0)))
+        frases.append(fonte1.render('Oi! Aqui iremos aprender a escovar os dentes! ', True, (0,0,0)))
+        frases.append(fonte1.render('Primeiro, vamos nos preparar! ', True, (0,0,0)))
         frases.append(fonte1.render('Para começar, vamos pegar a pasta de dente e abrir. ', True, (0,0,0)))
         frases.append(fonte1.render('Isso!! Agora vamos pegar a escova e levar para perto da pasta. ', True, (0,0,0)))
         frases.append(fonte1.render('Depois apertamos a pasta de dente em direção a escova (com pouca força!) ', True, (0,0,0)))
@@ -391,13 +370,54 @@ def Jogar(ids,exp):
                     tela.blit(proximo,(920,760))
         
     def final(): 
-        parabens=fonte1.render('Aqui está sua recompensa!', True, (255,0,0))
-        tela.blit(eu,(680,580))
-        tela.blit(parabens,(480,150))
+        parabens=fonte1.render('Parabéns, Aqui está sua recompensa!', True, (0,0,0))
+        tela.blit(eu,(680,480))
+        tela.blit(coisinho,(0,675))
+        tela.blit(parabens,(15,695))
         tela.blit(trofeu,(680,200))
-
+        oo = True
+        while oo:
+            if pygame.event.peek(KEYDOWN)==True or pygame.event.peek(JOYBUTTONDOWN)==True:
+                if (pygame.key.get_pressed()[K_SPACE]==True) or joystick.get_button(0):
+                    pygame.event.clear()
+                    oo = False
+                    pygame.time.wait(2000)
+                    return exp
+    
+    #instancias
+    todas_as_escovas = pygame.sprite.Group()
+    escovas = escova()
+    todas_as_escovas.add(escovas)
+    todas_as_pastas = pygame.sprite.Group()
+    pastas = pasta()
+    todas_as_pastas.add(pastas)
+    todas_as_estrelas = pygame.sprite.Group()
+    estrelas = estrela()
+    todas_as_estrelas.add(estrelas)
+    todas_os_copos = pygame.sprite.Group()
+    copos = copo()
+    todas_os_copos.add(copos)
+    personagem = personagem()
+    personagem.criar_personagem()
+    tudo = []
+    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeiraesc.png"),"esquerda cima"))
+    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeiraesc.png"),"esquerda baixo"))
+    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeira.png"), "meio cima"))
+    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeira.png"), "meio baixo"))
+    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeiradir.png"),"direita cima"))
+    tudo.append((pygame.image.load_extended(f"{path}\\imagens\\sujeiradir.png"), "direita baixo"))
+    fechar = True
+    telaboca = False
+    count = 0
+    fonte = pygame.font.SysFont('arial', 40, True, False)
+    sim = False
+    stack = 0
+    distancia = 75
+    margem = int((800-(2*(100+distancia)))/2)
+    vari=0
     inicializar = True
     inicfechar= False
+
     while inicializar:
         tela.fill((0,0,0))
         tela.blit(joysticks,(0,0))
@@ -429,23 +449,28 @@ def Jogar(ids,exp):
         pygame.display.update()
     contar =0
     somtutorial(contar)
+
     while not fechar:
-            tela.fill((0,0,0))
+            tela.fill((125,125,125))
             tela.blit(parede,(0,0))
             if pygame.event.peek(QUIT)==True:
+                pygame.mixer.stop()
                 return exp
 
-            if pygame.event.peek(KEYDOWN)==True:
-                if (pygame.key.get_pressed()[K_SPACE]==True):
+            #Checa o evento de teclado ou controle
+            if pygame.event.peek(KEYDOWN)==True or pygame.event.peek(JOYBUTTONDOWN)==True:
+                if (pygame.key.get_pressed()[K_SPACE]==True) or joystick.get_button(0):
                     if pygame.mixer.get_busy()== False:
                         pygame.mixer.Sound.play(somBotao)
+                        #tocamos o fala da terceira fase a cada avanço
                         if contar >6 and contar <10:
                             somtutorial1(contar-6)
                         contar+=1
+                        #tocamos o fala da primeira fase a cada avanço
                         if contar <7:
                             somtutorial(contar)
+                        #Atualizamos a escova e a pasta conforme o
                         if contar > 2:
-                        
                             if escovas.atual == 0 and pastas.atual == 1:
                                 #telaboca = True
                                 escovas.update()
@@ -471,8 +496,11 @@ def Jogar(ids,exp):
                                     copos.update()
                     
                     pygame.event.clear()
-            print (f"{contar}")
-            tela.blit(personagem.imagem[0], (190,290))
+
+            if escovas.atual == 3 or contar ==9: 
+                tela.blit(personagem.imagem[2], (190,290))
+            else:
+                tela.blit(personagem.imagem[0], (190,290))
             tela.blit(pia,(150,510))
             todas_as_escovas.draw(tela)
             todas_os_copos.draw(tela)
@@ -500,7 +528,7 @@ def Jogar(ids,exp):
                 for x in range(3):
                     for y in range(2):
                          if ((x == 0 or x==2) and (y == 1)):
-                            sujeiras.append(((x*(100+distancia)+margem),(y*(50+distancia)+margem+50)))
+                            sujeiras.append(((x*(100+distancia)+margem),(y*(52+distancia)+margem+50)))
                          elif x==1:
                             sujeiras.append(((x*(100+distancia)+margem),(y*(75+distancia)+margem+75)))
                          else: 
@@ -511,30 +539,34 @@ def Jogar(ids,exp):
                     tela.blit(tudo[oi][0],sujeiras[oi])
                 
                 if pygame.event.peek(QUIT)==True:
+                    pygame.mixer.stop()
                     return exp
-                if pygame.event.peek(KEYDOWN)==True:
-                    if pygame.key.get_pressed()[K_DOWN]==True:
+                if pygame.event.peek(KEYDOWN)==True or pygame.event.peek(JOYBUTTONDOWN)==True:
+                    if pygame.key.get_pressed()[K_a]==True:
+                        countboca = 0
+                        
+                    if pygame.key.get_pressed()[K_DOWN]==True or joystick.get_button(12):
                         pygame.mixer.Sound.play(somEscolha)
                         if vari%2 == 0:
                             vari += 1
                             pygame.event.clear()
                         else:
                             pass
-                    elif pygame.key.get_pressed()[K_UP]==True:
+                    elif pygame.key.get_pressed()[K_UP]==True or joystick.get_button(11):
                         pygame.mixer.Sound.play(somEscolha)
                         if vari%2 != 0:
                             vari -= 1
                             pygame.event.clear()
                         else:
                             pass
-                    elif pygame.key.get_pressed()[K_RIGHT]==True:  
+                    elif pygame.key.get_pressed()[K_RIGHT]==True or joystick.get_button(14):  
                         pygame.mixer.Sound.play(somEscolha)
                         if vari==4 or vari==5:
                             pass
                         else:
                             vari+=2
                             pygame.event.clear()
-                    elif pygame.key.get_pressed()[K_LEFT]==True:
+                    elif pygame.key.get_pressed()[K_LEFT]==True or joystick.get_button(13):
                         pygame.mixer.Sound.play(somEscolha)
                         if vari==0 or vari==1:
                             pass
@@ -542,7 +574,7 @@ def Jogar(ids,exp):
                             vari-=2
                             pygame.event.clear()
 
-                    if (pygame.key.get_pressed()[K_SPACE]==True):
+                    if (pygame.key.get_pressed()[K_SPACE]==True or joystick.get_button(0)):
                         if escovas.rect[0]== sujeiras[vari][0]+50 and escovas.rect[1]==sujeiras[vari][1] and tudo[vari][1]==ran[1]:
                             pygame.mixer.Sound.play(somConfirmar)
                             pygame.event.clear()
@@ -553,13 +585,9 @@ def Jogar(ids,exp):
                         else: 
                             pygame.event.clear()
                             fraseserro()
-                        
-                            
-                                      
+                                             
                 if ran[1]==None:
                     ran = random.choice(tudo)
-                
-                
                 todas_as_escovas.draw(tela)
                 escovas.rect[0] = sujeiras[vari][0]+50
                 escovas.rect[1] = sujeiras[vari][1]
@@ -581,12 +609,17 @@ def Jogar(ids,exp):
                     tela.fill((0,0,0))
                     tela.blit(fundo, (0,0))
                     tela.blit(boca, (0,0))
-                    for oi in range(len(sujeiras)):
-                        tela.blit(tudo[oi][0],sujeiras[oi])
+                    for sujeira in range(len(sujeiras)):
+                        tela.blit(tudo[sujeira][0],sujeiras[sujeira])
+                        if ran[1]==tudo[sujeira][1]:
+                            tudo[sujeira][0].set_alpha(260-(stack*26))
+
                     todas_as_escovas.draw(tela)
                     tela.blit(estrelavazio,(837,260))
                     pygame.draw.rect(tela,(240,203,56),(850,350,50,100))
                     pygame.draw.rect(tela,(0,0,0),(855,355,40,90-stack*9))
+                    #Se chegar a 10, a sujeira é substituida por um identificador sem valor
+                    #Dessa forma, podemos randomizar a escolha sem problemas fazendo o devido tratamento
                     if stack>=10:
                         tudo[vari] = (pygame.image.load_extended(f"{path}\\imagens\\nada.png"),None)
                         pygame.mixer.Sound.play(somStar)
@@ -595,6 +628,7 @@ def Jogar(ids,exp):
                         tela.blit(parabens,(795,190))
                         fraseselogio(count)
                         estrelas.update()
+                        #Se ainda há sujeira, escolha uma nova sujeira a ser limpada
                         if count<6:
                                 ran = random.choice(tudo)
                                 escovas.updatevolta()
@@ -603,17 +637,17 @@ def Jogar(ids,exp):
                         
                         sim = False
                         
-                    if pygame.event.peek(KEYDOWN)==True:
-                        if pygame.key.get_pressed()[K_RIGHT]==True:
+                    if pygame.event.peek(KEYDOWN)==True or pygame.event.peek(JOYBUTTONDOWN)==True:
+                        if pygame.key.get_pressed()[K_RIGHT]==True or joystick.get_button(14):
                             if escovas.rect[0]<sujeiras[vari][0]+100:
                                 escovas.frente()
                                 stack+=1
-                            pygame.event.clear()
-                        if pygame.key.get_pressed()[K_LEFT]==True:
+                            
+                        if pygame.key.get_pressed()[K_LEFT]==True or joystick.get_button(13):
                             if escovas.rect[0]>sujeiras[vari][0]:
                                 escovas.tras()
                                 stack+=1
-                            pygame.event.clear()
+                        pygame.event.clear()
                     pygame.display.update()
                     clock.tick(60)
             

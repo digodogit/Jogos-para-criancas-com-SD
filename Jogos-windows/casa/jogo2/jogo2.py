@@ -3,27 +3,42 @@ from pygame.locals import*
 from sys import exit
 import random
 import time
+import os 
+import sys
 from pygame import mouse
-
 
 def Jogar(ids, exp):
     pygame.init()
+    if getattr(sys, 'frozen', False):
+        path = sys._MEIPASS
+    else:
+        path = os.path.dirname(os.path.abspath(__file__))
     largura=1000
     altura=800
     tela = pygame.display.set_mode((largura, altura))
-    pygame.display.set_caption("prototipo")
+    pygame.display.set_caption("prototipo: jogo de arrumar o quarto")
     clock = pygame.time.Clock()
-    path = sys._MEIPASS
-    
+    class joysticksFalso(object):
+        def __init__(self):
+            pass
+        def get_button(self,numero):
+            pass
+    joysticks = []
+    for i in range(pygame.joystick.get_count()):
+        joysticks.append(pygame.joystick.Joystick(i))
+    for joystick in joysticks:
+        print(joystick.get_name()) 
+        joystick.init()
+    if len(joysticks)==0:
+        joystick = joysticksFalso()
+
     #variaveis 
     fonte = pygame.font.SysFont('arial', 40, True, False)
     brinquedos = False
     principal = False
-    ganhou = False
-    cores =["verde","azul","vermelho"]
-    trofeu = pygame.image.load_extended(f"{path}\\imagens\\trofeu.png")
+
+    #Estabelece o nome, a posição e a cor referente ao brinquedo
     class imagens(object):
-    
         def __init__(self,nome, position, imagem, cor):
             self.imagem = imagem
             self.position = position
@@ -34,6 +49,7 @@ def Jogar(ids, exp):
             self.moving = False
             self.start = position
 
+    #Logica do jogo
     class logica(object):
         flagA = 0
         flagV = 0
@@ -51,20 +67,24 @@ def Jogar(ids, exp):
         trofeu2 = pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\trofeu2.png")), (75,75))
         coisinho = pygame.image.load_extended(f"{path}\\imagens\\coisinho.png")
         proximo = pygame.image.load_extended(f"{path}\\imagens\\proximo.png")
+        seta = imagens("seta",(400,400),pygame.transform.smoothscale(pygame.image.load_extended(f"{path}\\imagens\\seta.png"),(76,42)),"vermelho")
+
         def __init__(self):
             self.imagem = []
             self.count = []
             
         def cria_imagem (self):
-            self.imagem.append(imagens("bola",(300,550),pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\bola.png")), (90,90)), "verde"))
-            self.imagem.append(imagens("dinossauro",(375,600),pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\dino.png")), (90,90)), "azul"))
-            self.imagem.append(imagens("robô",(450,475),pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\robo.png")), (90,90)), "vermelho"))
-            self.imagem.append(imagens("foguete",(600,650),pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\foguete.png")), (90,90)), "verde"))
-            self.imagem.append(imagens("cubo",(155,500),pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\cubo.png")), (90,90)), "verde"))
-            self.imagem.append(imagens("boneca",(650,450),pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\boneca.png")), (90,90)), "azul"))
-            self.imagem.append(imagens("coroa",(600,525),pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\coroa.png")), (90,90)), "azul"))
-            self.imagem.append(imagens("guitarra",(200,650),pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\guitarra.png")), (90,90)), "vermelho"))
-            self.imagem.append(imagens("carro",(100,550),pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\carro.png")), (90,90)), "vermelho"))
+            posi = [(380,585),(440,680),(520,475),(590,650),(190,535),(620,475),(700,555),(265,620),(90,575)]
+            random.shuffle (posi)
+            self.imagem.append(imagens("bola",posi[0],pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\bola.png")), (90,90)), "verde"))
+            self.imagem.append(imagens("dinossauro",posi[1],pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\dino.png")), (90,90)), "azul"))
+            self.imagem.append(imagens("robô",posi[2],pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\robo.png")), (90,90)), "vermelho"))
+            self.imagem.append(imagens("foguete",posi[3],pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\foguete.png")), (90,90)), "verde"))
+            self.imagem.append(imagens("cubo",posi[4],pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\cubo.png")), (90,90)), "verde"))
+            self.imagem.append(imagens("boneca",posi[5],pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\boneca.png")), (90,90)), "azul"))
+            self.imagem.append(imagens("coroa",posi[6],pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\coroa.png")), (90,90)), "azul"))
+            self.imagem.append(imagens("guitarra",posi[7],pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\guitarra.png")), (90,90)), "vermelho"))
+            self.imagem.append(imagens("carro",posi[8],pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\carro.png")), (90,90)), "vermelho"))
  
         def personagem(self, tipo):
             Falando = (pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\Personagem2-falando.png")), (272,195)))
@@ -80,11 +100,16 @@ def Jogar(ids, exp):
             if tipo == 'feliz':
                 return feliz
 
+        #Essa função desenha os brinquedos na tela.
         def draw(self, screen, brinquedos, count):
+            #Se estivermos na tela aproximada, usamos essa condição
             if brinquedos == True:
+                screen.fill((0,0,0)) 
+                screen.blit(parede2,(0,0))
+                screen.blit(modelo, (50,135))
+                screen.blit(placa, (50,0))
                 for i in range(0, len(self.imagem)):
-                    screen.blit(self.imagem[i].imagem, (self.imagem[i].rect[0],self.imagem[i].rect[1]))
-
+                    screen.blit(self.imagem[i].imagem, (self.imagem[i].rect.topleft[0],self.imagem[i].rect.topleft[1]))
                     if self.imagem[i].moving:
                         screen.blit(pygame.transform.smoothscale((self.imagem[i].imagem), (150,150)), (625,100))
                         vermelho = fonte.render(self.imagem[i].nome,True,(255,0,0))
@@ -127,7 +152,7 @@ def Jogar(ids, exp):
 
                 if self.countFraseBrin<=10:
                     self.frasesBrin(self.countFraseBrin,screen)
-
+            #Caso seja a tela inicial, usamos essa condição
             else:
                 for i in range(0, len(self.imagem)):
                     if len(count) == 11:
@@ -140,9 +165,10 @@ def Jogar(ids, exp):
                         elif self.imagem[i].cor == "azul":
                             screen.blit(pygame.transform.smoothscale(self.imagem[i].imagem,(50,50)), (180+self.imagem[i].rect.topleft[0]//2,475))
                     else:
-                         screen.blit(pygame.transform.smoothscale(self.imagem[i].imagem,(75,75)), (self.imagem[i].rect.topleft[0]-100,self.imagem[i].rect.topleft[1]+50))
+                         screen.blit(pygame.transform.smoothscale(self.imagem[i].imagem,(75,75)), (self.imagem[i].rect.bottomleft[0]-25,self.imagem[i].rect.bottomleft[1]-100))
                          if self.countFrase<=6:
                             self.frases(self.countFrase,screen)
+
         def collide (self, cor, rect):
             if cor =="verde":
                 return pygame.Rect.colliderect(rect,self.verde)
@@ -184,8 +210,8 @@ def Jogar(ids, exp):
             fonte1 = pygame.font.SysFont('arial', 20, True, False)
             frases.append(fonte1.render('Agora, vamos organizar os brinquedos por cores?', True, (0,0,0)))
             frases.append(fonte1.render('O armário possui 3 espaços, cada um com uma cor, sendo elas:', True, (0,0,0)))
-            frases.append(fonte1.render('Verde, vermelho e azul.', True, (0,0,0)))
-            frases.append(fonte1.render('Em cada espaço cabe 3 brinquedos com a mesma cor.', True, (0,0,0)))
+            frases.append(fonte1.render('         ,                 e        .', True, (0,0,0)))
+            frases.append(fonte1.render('Em cada espaço cabem 3 brinquedos com a mesma cor.', True, (0,0,0)))
             frases.append(fonte1.render('O objetivo é completar os espaços do armário com esses brinquedos.', True, (0,0,0)))
             frases.append(fonte1.render('E assim, ganhar uma linda estrela por cada espaço completado!', True, (0,0,0)))
             frases.append(fonte1.render('Legal! Agora, para mover os brinquedos para o espaço certo, utilize o mouse!', True, (0,0,0)))
@@ -193,6 +219,13 @@ def Jogar(ids, exp):
             frases.append(fonte1.render('E, com o botão pressionado, mova o mouse até o espaço de mesma cor do brinquedo.', True, (0,0,0)))
             frases.append(fonte1.render('Não se preocupe em errar, o importante é aprendermos a organizar!', True, (0,0,0)))
             frases.append(fonte1.render('Boa sorte e divirta-se!!', True, (0,0,0)))
+            cores = []
+            cores.append(fonte1.render('Verde', True, (0,255,0)))
+            verde  = cores[0].get_rect()
+            cores.append(fonte1.render('Vermelho ', True, (255,0,0)))
+            vermelho  = cores[1].get_rect()
+            cores.append(fonte1.render(' Azul', True, (0,0,255)))
+            azul  = cores[2].get_rect()
 
             if count==0 or count == 5 or count==6:
                     screen.blit(self.personagem('feliz'),(680,480))
@@ -204,6 +237,13 @@ def Jogar(ids, exp):
                     screen.blit(self.personagem('acenando'),(680,480))
                     screen.blit(self.coisinho,(0,675))
             screen.blit(frases[count],(15,695))
+            if count == 2:
+                    #screen.blit(frases[count],(15,695))
+                    screen.blit(cores[0],(15,695))
+                    screen.blit(cores[1],(15+verde.topright[0]+10,695))
+                    screen.blit(cores[2],(15+verde.topright[0]+10+vermelho.topright[0]+10,695))
+            
+            
             if pygame.mixer.get_busy()== False:
                 screen.blit(self.proximo,(920,760))
 
@@ -284,14 +324,14 @@ def Jogar(ids, exp):
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         pygame.mixer.Sound.play(somBotao)
                         oo=False
-                   
+                
         def Erros(self,screen):
             fonte1 = pygame.font.SysFont('arial', 20, True, False)
             frasesons = []
-            frasesons.append((fonte1.render('ops, tente de novo!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Ops.mp3")))
-            frasesons.append((fonte1.render('quase!! tente novamente!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Quase.mp3")))
-            frasesons.append((fonte1.render('Não são iguais, tente de novo!!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Nãoiguais.mp3")))
-            frasesons.append((fonte1.render('Diferentes... Mas sem problemas, vc consegue!!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Diferentes.mp3")))
+            frasesons.append((fonte1.render('ops, tente de novo!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Ops.ogg")))
+            frasesons.append((fonte1.render('quase!! tente novamente!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Quase.ogg")))
+            frasesons.append((fonte1.render('Não são iguais, tente de novo!!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Nãoiguais.ogg")))
+            frasesons.append((fonte1.render('Diferentes... Mas sem problemas, vc consegue!!', True, (0,0,0)),pygame.mixer.Sound(f"{path}\\sons\\erros\\Diferentes.ogg")))
             rando = random.choice(frasesons)
             pygame.mixer.Sound.set_volume(rando[1],0.2)
             pygame.mixer.Sound.play(rando[1])
@@ -308,19 +348,23 @@ def Jogar(ids, exp):
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         pygame.mixer.Sound.play(somBotao)
                         oo=False
-        def mouse_drag(self, screen):
-            mouse_rel = mouse.get_rel()
 
+        #Movimento do mouse
+        def mouse_drag(self, screen):
+            #Pega as coordenadas do mouse
+            mouse_rel = mouse.get_rel()
+            
             for i in range(0,len(self.imagem)):
+                #Checa qual imagem foi pega e move ela conforme o mouse mexer
                 if self.imagem[i].moving == True:
                     self.imagem[i].rect.move_ip(mouse_rel)
-
+                    #Se colidir com o armario de cor correta ele para de mover e solta automaticamente
                     if self.collide(self.imagem[i].cor,self.imagem[i].rect) and self.imagem[i].cor =="verde":
                         self.count.append([self.imagem[i].nome, self.imagem[i].cor,self.flagV])
                         self.imagem[i].moving = False
                         self.imagem[i].rect.topleft = 70+(30+self.verde[0])*self.flagV,15+self.verde[1]
                         self.flagV = self.flagV+1
-
+                        #Se tiver 3 brinquedos no armario correto, ganha elogio e uma estrela 
                         if self.flagV ==3:
                             pygame.mixer.Sound.play(somStar)
                             if len(self.count)<=8:
@@ -352,39 +396,46 @@ def Jogar(ids, exp):
                                 self.Elogios(screen)
                         else:
                             pygame.mixer.Sound.play(somConfirmar)
-                        
+        #Botão pressionado     
         def mouse_button_down(self):
+            #Pega a posição do mouse
             mouse_pos = mouse.get_pos()
-
+            #Ele irá checar se o posicionamento do mouse corresponde com de algum brinquedo
             for i in range(0,len(self.imagem)):
                 if self.imagem[i].rect.collidepoint(mouse_pos):
+                    #Condição para caso a imagem ainda não esteja no armario correspondente
                     if not self.collide(self.imagem[i].cor,self.imagem[i].rect):
+                        #Passa a posição atual para a variavel start
                         self.imagem[i].start = (self.imagem[i].rect[0],self.imagem[i].rect[1])
+                        #permite a imagem mexer
                         self.imagem[i].moving = True
-    
+
+        #Botão solto
         def mouse_button_up(self, screen):
+            #Apenas checa se o brinquedo solto esta no armario ou não
+            #Caso não volta pra posição inicial
             for i in range(0,len(self.imagem)):
                 if not self.collide(self.imagem[i].cor,self.imagem[i].rect): 
                         (self.imagem[i].rect[0],self.imagem[i].rect[1]) = self.imagem[i].start
                         self.imagem[i].moving = False
                         
-
+        #Todos os brinquedos no lugar correto
         def ganhou(self, count, screen):
             self.frasesPos(self.countFrasePos,screen)
             if self.countFrasePos == 1:
-                screen.blit(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\trofeu.png")), (250,250)),(575,100))
-                pygame.mixer.Sound.play(somStar)
+                screen.blit(pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\trofeu.png")), (250,250)),(572,100))
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN and pygame.mixer.get_busy()== False:
                     logica.countFrasePos=logica.countFrasePos+1
+                    pygame.mixer.Sound.play(somStar)
                     logica.sonsPos(logica.countFrasePos)
                     self.count.append('')
         
-    modelo = pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\modelo2.png")), (238*1.25,365*1.25))
-    placa = pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\placa.png")), (238*1.25,250//2))
-    modelo2 = pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\modelo22.png")), (238//1.5,365//1.5))
-    placa2 = pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\placa.png")), (238//1.5,250//3.5))
-    recModelo = Rect(200, 300, 238//1.5,365//1.5)
+    modelo = pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\modelo2.png")), (int(238*1.25),int(365*1.25)))
+    modelopequeno = pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\modelo.png")), (int(238*1.25),int(365*1.25)))
+    placa = pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\placa.png")), (int(238*1.25),int(250//2)))
+    placa2 = pygame.transform.smoothscale((pygame.image.load_extended(f"{path}\\imagens\\placa.png")), (int(238//1.5),int(250//3.5)))
+    recModelo = Rect(200, 300, int(238//1.5),int(365//1.5))
     parede = pygame.image.load_extended(f"{path}\\imagens\\parede.png")
     parede2 = pygame.image.load_extended(f"{path}\\imagens\\parede2.png")
     joysticks = pygame.image.load_extended(f"{path}\\imagens\\inicio.png")
@@ -401,11 +452,14 @@ def Jogar(ids, exp):
     pygame.mixer.Sound.set_volume(somBotao,0.05)
     somStar=pygame.mixer.Sound(f"{path}\\sons\\star2.ogg")
     pygame.mixer.Sound.set_volume(somStar,0.07)
+    #Instância
     logica = logica()
+
     while inicializar:
         tela.fill((0,0,0))
         tela.blit(joysticks,(0,0))
         tela.blit(logica.proximo,(920,760))
+        #print(joystick.get_button(13))
         for event in pygame.event.get():
             if event.type == QUIT:
                 return exp
@@ -435,20 +489,20 @@ def Jogar(ids, exp):
     logica.sons(logica.countFrase)
     
     while principal:
-        tela.fill((0,0,0))
+        tela.fill((125,125,125))
         tela.blit(parede,(0,0))
-        tela.blit(pygame.transform.smoothscale((modelo), (238//1.5,365//1.5)),(200,300))
+        tela.blit(pygame.transform.smoothscale((modelopequeno), (238//1.5,365//1.5)),(200,300))
         tela.blit(placa2, (200,215))
-        logica.draw(tela,brinquedos,logica.count) 
-        
+        logica.draw(tela,brinquedos,logica.count)
+        mouse_position = pygame.mouse.get_pos() 
+        #tela.blit(logica.seta.imagem,mouse_position)
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.mixer.stop()
                 return exp
-                
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_position = pygame.mouse.get_pos()
-                print(mouse_position)
+            
+            if (event.type == pygame.MOUSEBUTTONDOWN) or joystick.get_button(0):
+                #print(mouse_position)
                 if logica.countFrase<6 and pygame.mixer.get_busy()== False:
                     pygame.mixer.Sound.play(somBotao)
                     logica.countFrase=logica.countFrase+1
@@ -471,10 +525,10 @@ def Jogar(ids, exp):
         clock.tick(60)
 
         while brinquedos:
-            tela.fill((0,0,0)) 
-            tela.blit(parede2,(0,0))
-            tela.blit(modelo, (50,135))
-            tela.blit(placa, (50,0))
+            if pygame.event.peek(KEYDOWN)==True:
+                if pygame.key.get_pressed()[K_a]==True and logica.countFraseBrin==11:
+                    logica.countFraseBrin = 0
+                    logica.sonsBrin(logica.countFraseBrin)
             for event in pygame.event.get():
                 if event.type == QUIT:
                     return exp
