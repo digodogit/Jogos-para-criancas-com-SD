@@ -3,7 +3,7 @@ JOGOS ELETRÔNICOS: COMPUTADOR DE BAIXO CUSTO PARA PROMOÇÃO DA AUTONOMIA E INC
 Esse projeto foi realizado como Trabalho de Conclusão de Curso (TCC), para conclusão da minha graduação em Engenharia da Computação.
 
 O projeto visa utilizar a linguagem Python, juntamente com a biblioteca Pygame, para criação de jogos eletrônicos capazes de auxiliarem crianças com Sindrome de Down em seu aprendizado e trazer a inclusão social para elas.
-Por ser um projeto focado no baixo custo, a intenção era eles serem simples o suficiente para funcionar em uma Raspberry PI.
+Por ser um projeto focado no baixo custo, a intenção é de serem simples o suficiente para funcionar em uma Raspberry PI.
 
 Foram desenvolvidos 3 jogos:
   - Jogo da memória com letras. Usando temas de animais ou frutas para aprender novas palavras.
